@@ -4,6 +4,7 @@ import os
 import time
 
 import aiohttp
+from aiohttp_retry import RetryClient, ExponentialRetry
 import requests
 import tqdm
 from bs4 import BeautifulSoup
@@ -63,10 +64,10 @@ class NetworkClient:
 
     def __init__(self,
                  user_agent,
-                 retry_count=3,
+                 retry_count=10,
                  batch_size=5,
-                 backoff_factor=0.2,
-                 rate_limit=7):
+                 backoff_factor=0.5,
+                 rate_limit=8):
         self.retry_count = retry_count
         self.batch_size = batch_size
         self.backoff_factor = backoff_factor
@@ -231,6 +232,7 @@ class NetworkClient:
             Content: Contents of response from get request.
         """
         async with await session.get(link) as response:
+            assert response.status == 200
             contents = await response.read()
         return contents
 
@@ -260,8 +262,10 @@ class NetworkClient:
             "Connection": "keep-alive",
             "User-Agent": self.user_agent,
         }
-        client = aiohttp.ClientSession(connector=conn, headers=headers,
-                                       raise_for_status=True)
+        retry_options = ExponentialRetry(attempts=5, statuses=[503])
+        client = RetryClient(connector=conn, headers=headers,
+                                       raise_for_status=True,
+                                       retry_options=retry_options)
 
         async with client:
             for group in tqdm.tqdm(batch(inputs, self.rate_limit),
