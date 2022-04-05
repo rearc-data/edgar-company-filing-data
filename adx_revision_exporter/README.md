@@ -7,17 +7,17 @@
 You can use the following code snippet to export any number of desired revisions from this dataset. There are two input avariables required for this:
 
 1. The name of the S3 bucket that you would like the data to be exported to.
-2. The dataset ARN for this product which you can access from the AWS Data Exchange console after you subscribe to the produc.
+2. The dataset ID for this product which you can access from the AWS Data Exchange console after you subscribe to the product.
 
 This tool requires Python 3.7+ and `boto3`.
 
-### Example usage
+### Example Usage
 ```
 $ cd adx_revision_exporter
 $ python adx_revision_exporter.py --s3-bucket <DESTINATION_BUCKET_NAME> <DATASET_ARN>
 ```
 
-### Usage Info
+### Command Info
 
 ```
 $ python adx_revision_exporter.py --help
