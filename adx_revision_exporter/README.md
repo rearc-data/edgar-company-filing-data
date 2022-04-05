@@ -9,13 +9,27 @@ You can use the following code snippet to export any number of desired revisions
 1. The name of the S3 bucket that you would like the data to be exported to.
 2. The dataset ARN for this product which you can access from the AWS Data Exchange console after you subscribe to the produc.
 
+This tool requires Python 3.7+ and `boto3`.
+
 ### Example usage
 ```
 $ cd adx_revision_exporter
 $ python adx_revision_exporter.py --s3-bucket <DESTINATION_BUCKET_NAME> <DATASET_ARN>
 ```
 
-Requires Python 3.7+ and `boto3`.
+### Usage Info
+
+```
+$ python adx_revision_exporter.py --help
+Usage: adx_revision_exporter.py [OPTIONS] DATASET_ID
+
+Options:
+  -s, --s3-bucket TEXT          Destination S3 bucket.
+  --download / --dont-download  Download all revision assets to local disk?
+                                (Defaults to False)
+  --export / --dont-export      Export assets to S3 bucket? (Defaults to True)
+  --help                        Show this message and exit.
+```
 
 ### Contact Details
 - If you find any issues with or have enhancement ideas for this product, open up a GitHub issue and we will gladly take a look at it. Better yet, submit a pull request. Any contributions you make are greatly appreciated :heart:.
