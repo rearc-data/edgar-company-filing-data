@@ -9,7 +9,7 @@ You can use the following code snippet to export any number of desired revisions
 1. The name of the S3 bucket that you would like the data to be exported to.
 2. The dataset ID for this product which you can access from the AWS Data Exchange console after you subscribe to the product.
 
-This tool requires Python 3.7+ and `boto3`.
+This tool requires Python 3.7+, and `click`, `tqdm`, and `boto3`.
 
 ### Example Usage
 ```

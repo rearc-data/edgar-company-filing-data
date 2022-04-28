@@ -3,7 +3,10 @@ import os
 import re
 import time
 import click
+from tqdm import tqdm
 import uuid
+
+boto3.setup_default_session(profile_name='rdpdp')
 
 dx = boto3.client("dataexchange", region_name="us-east-1")
 s3 = boto3.client("s3")
@@ -40,22 +43,18 @@ def get_all_assets(data_set_id, revision_id):
     return assets
 
 
-def export_assets(assets, bucket):
+def export_revision(revision, bucket):
+    # Do nothing if revision is revoked
+    if revision.get("Revoked"): return
 
-    asset_destinations = []
-
-    for asset in assets:
-        asset_destinations.append(
-            {"AssetId": asset.get("Id"), "Bucket": bucket, "Key": asset.get("Name")}
-        )
+    revision_destinations = [{"RevisionId":revision.get("Id"), "Bucket":bucket, "KeyPattern":"${Asset.Name}"}]
 
     job = dx.create_job(
-        Type="EXPORT_ASSETS_TO_S3",
+        Type="EXPORT_REVISIONS_TO_S3",
         Details={
-            "ExportAssetsToS3": {
-                "RevisionId": asset.get("RevisionId"),
-                "DataSetId": asset.get("DataSetId"),
-                "AssetDestinations": asset_destinations,
+            "ExportRevisionsToS3": {
+                "DataSetId": revision.get("DataSetId"),
+                "RevisionDestinations": revision_destinations,
             }
         },
     )
@@ -63,6 +62,7 @@ def export_assets(assets, bucket):
     job_id = job.get("Id")
     dx.start_job(JobId=job_id)
 
+    # Wait until job is complete
     while True:
         job = dx.get_job(JobId=job_id)
 
@@ -74,8 +74,7 @@ def export_assets(assets, bucket):
                     job_id, job.get("Errors")[0].get("Message")
                 )
             )
-
-        time.sleep(1)
+    time.sleep(0.25)
 
 
 def to_url(s):
@@ -102,7 +101,7 @@ def download_assets(assets, bucket, asset_dir):
 
 
 def make_s3_staging_bucket():
-    bucket_name = str(uuid.uuid4())
+    bucket_name = "rearc_adx_exported_staging_" + str(uuid.uuid4())
     s3.create_bucket(Bucket=bucket_name)
     return bucket_name
 
@@ -116,6 +115,7 @@ def remove_s3_bucket(bucket_name):
 
 @click.command()
 @click.option("--s3-bucket", "-s", help="Destination S3 bucket.")
+@click.option("--resume-at", "-r", help="Revision ID to resume at. Good for resuming stopped or crashed jobs.")
 @click.option(
     "--download/--dont-download",
     default=False,
@@ -127,9 +127,9 @@ def remove_s3_bucket(bucket_name):
     help="Export assets to S3 bucket? (Defaults to True)",
 )
 @click.argument("dataset-id")
-def main(s3_bucket, dataset_id, download, export):
+def main(s3_bucket, resume_at, dataset_id, download, export):
     temp_bucket = None
-    if not s3_bucket:
+    if s3_bucket is None:
         print("No s3 bucket provided, creating temporary staging bucket")
         temp_bucket = make_s3_staging_bucket()
         print("Created temporary bucket {}".format(temp_bucket))
@@ -143,14 +143,20 @@ def main(s3_bucket, dataset_id, download, export):
             print("Getting all assets for dataset: {}".format(ds.get("Name")))
 
             revisions = get_all_revisions(ds.get("Id"))
-            for rev in revisions:
-                assets = get_all_assets(ds.get("Id"), rev.get("Id"))
-
-                destination_dir = os.path.join(to_url(ds.get("Name")), rev.get("Id"))
-
+            progress_bar = tqdm(revisions)
+            for rev in progress_bar:
+                if resume_at is not None:
+                    if rev.get("Id") != resume_at:
+                        continue
+                    else:
+                        resume_at = None
+                progress_bar.set_description("Exporting Revision: " + rev.get("Id"))
                 if export:
-                    export_assets(assets, staging_bucket)
+                    export_revision(rev, staging_bucket)
                 if download:
+                    assets = get_all_assets(ds.get("Id"), rev.get("Id"))
+
+                    destination_dir = os.path.join(to_url(ds.get("Name")), rev.get("Id"))
                     download_assets(assets, staging_bucket, destination_dir)
 
             print("---")
