@@ -6,8 +6,6 @@ import click
 from tqdm import tqdm
 import uuid
 
-boto3.setup_default_session(profile_name='rdpdp')
-
 dx = boto3.client("dataexchange", region_name="us-east-1")
 s3 = boto3.client("s3")
 
