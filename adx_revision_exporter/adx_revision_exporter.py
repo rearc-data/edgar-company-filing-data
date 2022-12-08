@@ -110,7 +110,7 @@ def download_assets(assets, bucket, asset_dir):
 def delete_assets(assets, bucket):
     for asset in assets:
         asset_name = asset.get("Name")
-        s3.delete_object(bucket, asset_name)
+        s3.delete_object(Bucket=bucket, Key=asset_name)
 
 
 def make_s3_staging_bucket():
