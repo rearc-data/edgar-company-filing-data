@@ -24,12 +24,17 @@ $ python adx_revision_exporter.py --help
 Usage: adx_revision_exporter.py [OPTIONS] DATASET_ID
 
 Options:
-  -s, --s3-bucket TEXT          Destination S3 bucket.
+  -s, --s3-bucket TEXT          Destination S3 bucket (if both --download and --dont-export flags are
+                                enabled, this is used as a temporary staging bucket).
+  -r, --resume-at TEXT          Revision ID to resume at. Good for resuming
+                                stopped or crashed jobs.
   --download / --dont-download  Download all revision assets to local disk?
                                 (Defaults to False)
   --export / --dont-export      Export assets to S3 bucket? (Defaults to True)
   --help                        Show this message and exit.
 ```
+
+Please keep in mind that the `--download` flag will first export files to S3, then download them to your local disk. If the `--download` and `--dont-export` flags are used together, the script will use S3 as a temporary staging area, exporting each revision to S3, downloading from S3 to disk, and then removing the revision files from S3. 
 
 ### Contact Details
 - If you find any issues with or have enhancement ideas for this product, open up a GitHub issue and we will gladly take a look at it. Better yet, submit a pull request. Any contributions you make are greatly appreciated :heart:.

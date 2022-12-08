@@ -1,10 +1,12 @@
-import boto3
 import os
 import re
 import time
+import sys
+import uuid
+
+import boto3
 import click
 from tqdm import tqdm
-import uuid
 
 dx = boto3.client("dataexchange", region_name="us-east-1")
 s3 = boto3.client("s3")
@@ -43,9 +45,16 @@ def get_all_assets(data_set_id, revision_id):
 
 def export_revision(revision, bucket):
     # Do nothing if revision is revoked
-    if revision.get("Revoked"): return
+    if revision.get("Revoked"):
+        return
 
-    revision_destinations = [{"RevisionId":revision.get("Id"), "Bucket":bucket, "KeyPattern":"${Asset.Name}"}]
+    revision_destinations = [
+        {
+            "RevisionId": revision.get("Id"),
+            "Bucket": bucket,
+            "KeyPattern": "${Asset.Name}",
+        }
+    ]
 
     job = dx.create_job(
         Type="EXPORT_REVISIONS_TO_S3",
@@ -98,6 +107,12 @@ def download_assets(assets, bucket, asset_dir):
         print("Downloaded file {}".format(asset_file))
 
 
+def delete_assets(assets, bucket):
+    for asset in assets:
+        asset_name = asset.get("Name")
+        s3.delete_object(bucket, asset_name)
+
+
 def make_s3_staging_bucket():
     bucket_name = "rearc_adx_exported_staging_" + str(uuid.uuid4())
     s3.create_bucket(Bucket=bucket_name)
@@ -112,20 +127,32 @@ def remove_s3_bucket(bucket_name):
 
 
 @click.command()
-@click.option("--s3-bucket", "-s", help="Destination S3 bucket.")
-@click.option("--resume-at", "-r", help="Revision ID to resume at. Good for resuming stopped or crashed jobs.")
+@click.option(
+    "--s3-bucket",
+    "-s",
+    help="Destination S3 bucket (if both --download and --dont-export flags are enabled, this is used as a temporary staging bucket).",
+)
+@click.option(
+    "--resume-at",
+    "-r",
+    help="Revision ID to resume at. Good for resuming stopped or crashed jobs.",
+)
 @click.option(
     "--download/--dont-download",
     default=False,
-    help="Download all revision assets to local disk? (Defaults to False)",
+    help="Download all revision assets to local disk? (Defaults to False).",
 )
 @click.option(
     "--export/--dont-export",
     default=True,
-    help="Export assets to S3 bucket? (Defaults to True)",
+    help="Export assets to S3 bucket? (Defaults to True).",
 )
 @click.argument("dataset-id")
 def main(s3_bucket, resume_at, dataset_id, download, export):
+    if not export and not download:
+        print("--dont-export and --dont-download are both set to True - Doing nothing.")
+        sys.exit(0)
+
     temp_bucket = None
     if s3_bucket is None:
         print("No s3 bucket provided, creating temporary staging bucket")
@@ -149,13 +176,21 @@ def main(s3_bucket, resume_at, dataset_id, download, export):
                     else:
                         resume_at = None
                 progress_bar.set_description("Exporting Revision: " + rev.get("Id"))
-                if export:
-                    export_revision(rev, staging_bucket)
+
+                # export step is needed for both export and download operations
+                export_revision(rev, staging_bucket)
+
                 if download:
                     assets = get_all_assets(ds.get("Id"), rev.get("Id"))
 
-                    destination_dir = os.path.join(to_url(ds.get("Name")), rev.get("Id"))
+                    destination_dir = os.path.join(
+                        to_url(ds.get("Name")), rev.get("Id")
+                    )
                     download_assets(assets, staging_bucket, destination_dir)
+                    
+                    # if asked not to export, delete the files from S3 staging bucket
+                    if not export:
+                        delete_assets(assets, staging_bucket)
 
             print("---")
     finally:
