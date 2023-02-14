@@ -20,168 +20,18 @@
 +  workflow_run:
 +    workflows: ['Azure Production - Build and Deploy']
 +    types:
-+      - completed
-+permissions:
-+  contents: read
-+# This allows a subsequently queued workflow run to cancel previous runs
-+concurrency:
-+  group: '${{ github.workflow }} @ ${{ github.head_ref }} ${{ github.event_name }}'
-+  cancel-in-progress: true
-+  5  
-+Request.md
-+@@ -4,4 +4,7 @@ pulls_request :Patch 5'@index.md :
-+#README.md/README.md :	#README.md/README.md :
-+:Build::	:Build::
-+Publish :	Publish :
-+access :Public :	#access :Public :
++      - completed :
++:Build::	
+:Build::
++Publish 
+:Publish :
++access :Private :
+Public :view :
+#access :Public :
 +Private :
 +# WORKSFLOW
 + AUTOMATE AUTOMATES BEGIN GLOW4 AUTOMATES#Test :tests :tests :Run'@ci# edgar-company-filing-data
- Code to publish all company filings data from EDGAR on ADX
-+#README.md/README.md :
-+:Build::
-+Publish :
-+#access :Public :
-+Private :
-+# WORKSFLOW
-+ AUTOMATE AUTOMATES BEGIN GLOW4 AUTOMATES#Test :tests :tests :Run'@ci
-:Build::
-# edgar-company-filing-data
-Code to publish all company filings data from EDGAR on ADX 
-diff --git a/README.md b/README.md
-index 4e14e73..fcc9e34 100644
---- a/README.md
-+++ b/README.md
-@@ -1,2 +1,283 @@
--# edgar-company-filing-data
-+
-+# Checkout via command line
-+If the conflicts on this branch are too complex to resolve in the web editor, you can check it out via command line to resolve the conflicts.
-+#https:www.bitore.net:
-+https://github.com/mowjoejoejoejoe/WORKSFLOW.git
-+Step 1: Clone the repository or update your local repository with the latest changes.
-+git pull origin main
-+Step 2: Switch to the head branch of the pull request.
-+git checkout Master
-+Step 3: Merge the base branch into the head branch.
-+git merge main
-+Step 4: Fix the conflicts and commit the result.
-+See Resolving a merge conflict using the command line for step-by-step instructions on resolving merge conflicts.
-+Step 5: Push the changes.
-+git push -u origin Master WORKSFLOW
-+ AUTOMATE AUTOMATES BEGIN GLOW4 AUTOMATES#Test :tests :tests :Run'@ci:
-+:BSkip to content
-+github
-+/ Projects
-+/  GitHub public roadmap
-+Search or jump to…
-+
-+@mowjoejoejoejoe 
-+roadmap #616
-+Actions: Self-hosted runners now support Windows ARM64#616
-+Item statusClosed
-+github-product-roadmap opened 3 months ago
-+Description
-+
-+github-product-roadmap
-+3 months ago
-+Summary
-+The GitHub Actions Runner now supports Windows ARM64 architecture.
-+
-+Intended Outcome
-+Previously, the Actions runner did not include Windows ARM64 as a supported OS & Arch combination. This new release of the runner enables customers to use their Windows ARM64 environments as self-hosted runners for GitHub Actions.
-+
-+How will it work?
-+During the self-hosted runner creation flow, customers will select the Windows ARM64 release for deployment. For additional information on how to set up a self-hosted Windows ARM64 runner, please refer to our documentation. If you have any feedback or questions for Actions self-hosted Windows ARM support, you can submit an issue in the runner repository.
-+
-+Comments
-+Properties
-+Assignees
-+No Assignees
-+Labels
-+actions
-+cloud
-+ga
-+all
-+server
-+shipped
-+runners
-+Milestone
-+No Milestone
-+Status
-+Q3 2022 – Jul-Sep
-+Repository
-+roadmap
-+Linked pull requests
-+No linked pull requests
-+Tracks
-+None yet
-+Tracked by
-+None yet
-+ Hide extra fields
-+Open in new tab
-+Copy link
-+GitHub public roadmap
-+Board
-+Table
-+Generally available
-+Cloud (github.com)
-+Server (GHES)
-+GitHub Advanced Security
-+GitHub Issues
-+GitHub Actions
-+-status:"Q4 2021 – Oct-Dec","Q1 2022 – Jan-Mar","Q2 2022 – Apr-Jun" 
-+189
-+ (189)
-+Q3 2022 – Jul-Sep
-+41
-+ (41)
-+Mobile: Feature updates Q3 2022
-+Projects: Auto-archive automation
-+Projects: Add projects to team index
-+Actions: Self-hosted runners now support Windows ARM64
-+Q4 2022 – Oct-Dec
-+51
-+ (51)
-+Billing Usage API
-+Kotlin security analysis support in CodeQL code scanning (public beta)
-+API Versioning (GA)
-+Fine-grained PATs (v2 PATs) - [Public Beta]
-+Q1 2023 – Jan-Mar
-+43
-+ (43)
-+Git LFS moves to metered billing
-+Dependabot: grouped updates
-+Actions: Required workflows
-+Pull Request Merge Queue
-+Q2 2023 – Apr-Jun
-+17
-+ (17)
-+Swift security analysis support in CodeQL code scanning (beta)
-+Actions: Custom deployment protection rules (gates)
-+Command Palette
-+Bulk-enable code scanning for multiple repositories (GHES)
-+Q3 2023 – Jul-Sep
-+1
-+ (1)
-+Actions: GitHub-hosted macOS runners now offer Apple M1 silicon options (Beta)
-+Q4 2023 – Oct-Dec
-+1
-+ (1)
-+Future
-+35
-+ (35)
-+Skip to content
-+Search or jump to…
-+Pull requests
-+Issues
-+Codespaces
-+Marketplace
-+Explore
-+
-+@mowjoejoejoejoe 
-+mowjoejoejoejoe
-+/
+ 
 +WORKSFLOW
 +Public
 +Cannot fork because you own this repository and are not a member of any organizations.
